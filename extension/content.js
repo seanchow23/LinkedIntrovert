@@ -1,22 +1,15 @@
 // LinkedIntrovert — content script
-// Hides feed posts, sidebars, and nav noise using position-based CSS.
-// Does NOT touch the nav bar or the "Start a post" box.
 
 const CSS = `
-  /* ── Hide the left sidebar (first column) ── */
-  body > div > div > div > div > div:first-child:not(main) {
-    display: none !important;
-  }
+  /* ── This worked before: hide feed posts, keep share box ── */
+  main > div > div > div > div > div:not(:first-child) { display: none !important; }
+  main > div > div > div > div > div:first-child > div:not(:first-child) { display: none !important; }
 
-  /* ── Hide the right sidebar (last column) ── */
-  body > div > div > div > div > div:last-child:not(main) {
-    display: none !important;
-  }
+  /* ── Hide right sidebar ── */
+  aside { display: none !important; }
 
-  /* ── Hide feed posts — everything after the share box ── */
-  main > div > div > div > div > *:not(:first-child) {
-    display: none !important;
-  }
+  /* ── Hide left sidebar cards below your name/photo ── */
+  main ~ * { display: none !important; }
 
   /* ── Hide messaging dock ── */
   div[id^="msg"] { display: none !important; }
@@ -25,7 +18,6 @@ const CSS = `
 function injectStyles() {
   const existing = document.getElementById('linkedintrovert-styles');
   if (existing) existing.remove();
-
   const style = document.createElement('style');
   style.id = 'linkedintrovert-styles';
   style.textContent = CSS;
