@@ -84,34 +84,18 @@ const HIDE_ALWAYS = [
 
 // ---------------------------------------------------------------------------
 // FEED FILTERING
-//
-// The home feed mixes your posts with everyone else's. We want:
-//   ✓  The "Start a post" share box at the top
-//   ✓  Your own posts (like a journal scroll)
-//   ✗  Everyone else's posts
-//
-// LinkedIn wraps each update in .occludable-update containing
-// .feed-shared-update-v2. The author link inside the actor block
-// tells us who wrote it — we compare that to your own profile path.
 // ---------------------------------------------------------------------------
 
 function getMyProfilePath() {
-  // The logged-in user's profile link appears in the top-nav "Me" menu.
-  // Its href is the most reliable signal of who you are.
-  const candidates = [
-    document.querySelector('a[data-control-name="identity_profile_photo"]'),
-    document.querySelector('.global-nav__me-photo')?.closest('a'),
-    document.querySelector('a[href*="/in/me"]'),
-  ];
-  for (const link of candidates) {
-    if (!link) continue;
-    try {
-      return new URL(link.href).pathname.replace(/\/$/, '').toLowerCase();
-    } catch {
-      // skip malformed
-    }
+  // Find the first /in/ profile link on the page — on the home feed this is
+  // always the current user's link in the left sidebar.
+  const link = document.querySelector('a[href*="linkedin.com/in/"]');
+  if (!link) return null;
+  try {
+    return new URL(link.href).pathname.replace(/\/$/, '').toLowerCase();
+  } catch {
+    return null;
   }
-  return null;
 }
 
 function isOwnPost(card, myPath) {
@@ -122,7 +106,7 @@ function isOwnPost(card, myPath) {
   for (const link of actorLinks) {
     try {
       const href = new URL(link.href).pathname.replace(/\/$/, '').toLowerCase();
-      if (href === myPath || href === '/in/me') return true;
+      if (href === myPath) return true;
     } catch {
       // skip
     }
@@ -130,8 +114,6 @@ function isOwnPost(card, myPath) {
   return false;
 }
 
-// Strip all social noise (likes, comments, reaction buttons) inside a card
-// we're keeping — so your own posts show as plain text, no counters.
 function stripSocialNoise(card) {
   [
     '.social-details-social-counts',
@@ -157,7 +139,7 @@ function filterFeed() {
   document
     .querySelectorAll('.occludable-update, .feed-shared-update-v2')
     .forEach((card) => {
-      if (card.dataset.liFiltered) return; // already processed
+      if (card.dataset.liFiltered) return;
       card.dataset.liFiltered = '1';
 
       if (isOwnPost(card, myPath)) {
@@ -188,8 +170,6 @@ function applyAll() {
 
 // ---------------------------------------------------------------------------
 // DOM OBSERVER
-// LinkedIn is a SPA — content re-renders as you scroll and navigate.
-// Debounce the observer so we batch rapid DOM changes (e.g. infinite scroll).
 // ---------------------------------------------------------------------------
 
 let debounceTimer = null;
@@ -202,7 +182,9 @@ function observeDOM() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// Boot — respect the popup's on/off toggle
+// ---------------------------------------------------------------------------
+// BOOT
+// ---------------------------------------------------------------------------
 chrome.storage.sync.get({ enabled: true }, ({ enabled }) => {
   if (!enabled) return;
   applyAll();
