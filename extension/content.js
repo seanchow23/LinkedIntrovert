@@ -1,15 +1,16 @@
 // LinkedIntrovert — content script
 
 const CSS = `
-  /* ── This worked before: hide feed posts, keep share box ── */
+  /* ── Hide feed posts, keep share box ── */
   main > div > div > div > div > div:not(:first-child) { display: none !important; }
   main > div > div > div > div > div:first-child > div:not(:first-child) { display: none !important; }
 
-  /* ── Hide right sidebar ── */
+  /* ── Hide right sidebar (LinkedIn News, ads, widgets) ── */
   aside { display: none !important; }
 
-  /* ── Hide left sidebar cards below your name/photo ── */
-  main ~ * { display: none !important; }
+  /* ── Hide left sidebar cards below your name/photo ──
+     These are the 2nd and 3rd cards: profile viewers, analytics, premium, saved items etc ── */
+  main > div > div > div > div > div:first-child > div:first-child > div:not(:first-child) { display: none !important; }
 
   /* ── Hide messaging dock ── */
   div[id^="msg"] { display: none !important; }
