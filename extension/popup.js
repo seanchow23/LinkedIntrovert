@@ -1,25 +1,31 @@
 // LinkedIntrovert — popup script
-// Renders current prefs and saves changes back to chrome.storage.sync.
+// Single on/off toggle. When disabled, content.js still loads but
+// applyAll() checks this flag and does nothing.
 
-const KEYS = ['hideComments', 'hideLikes', 'hideWhoViewed'];
+const toggle = document.getElementById('enabled');
+const label = document.getElementById('status-label');
 
-const DEFAULT_PREFS = {
-  hideComments: true,
-  hideLikes: true,
-  hideWhoViewed: true,
-};
+function updateLabel(enabled) {
+  label.textContent = enabled ? 'Journal mode on' : 'Journal mode off';
+  label.className = 'toggle-label' + (enabled ? '' : ' off');
+}
 
-chrome.storage.sync.get(DEFAULT_PREFS, (prefs) => {
-  KEYS.forEach((key) => {
-    const el = document.getElementById(key);
-    if (el) el.checked = prefs[key];
-  });
+// Load current state
+chrome.storage.sync.get({ enabled: true }, ({ enabled }) => {
+  toggle.checked = enabled;
+  updateLabel(enabled);
 });
 
-KEYS.forEach((key) => {
-  const el = document.getElementById(key);
-  if (!el) return;
-  el.addEventListener('change', () => {
-    chrome.storage.sync.set({ [key]: el.checked });
+// Save on change + tell the active tab to re-run
+toggle.addEventListener('change', () => {
+  const enabled = toggle.checked;
+  chrome.storage.sync.set({ enabled });
+  updateLabel(enabled);
+
+  // Reload the active LinkedIn tab so content.js re-initialises cleanly
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]?.url?.includes('linkedin.com')) {
+      chrome.tabs.reload(tabs[0].id);
+    }
   });
 });

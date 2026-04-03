@@ -6,27 +6,30 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <h1>LinkedIntrovert</h1>
-    <ul>
-      <li>
-        <label>
-          <input type="checkbox" id="hideComments" />
-          Hide comments
-        </label>
-      </li>
-      <li>
-        <label>
-          <input type="checkbox" id="hideLikes" />
-          Hide likes
-        </label>
-      </li>
-      <li>
-        <label>
-          <input type="checkbox" id="hideWhoViewed" />
-          Hide "who viewed your profile"
-        </label>
-      </li>
+    <div class="header">
+      <span class="logo">✦</span>
+      <div>
+        <h1>LinkedIntrovert</h1>
+        <p class="tagline">LinkedIn, just for writing.</p>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <span class="toggle-label" id="status-label">Journal mode on</span>
+      <label class="switch">
+        <input type="checkbox" id="enabled" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <ul class="what-hidden">
+      <li>✦ Other people's posts</li>
+      <li>✦ Likes, reactions, comments</li>
+      <li>✦ Notifications &amp; jobs</li>
+      <li>✦ Analytics &amp; "who viewed"</li>
+      <li>✦ Right-rail noise</li>
     </ul>
+
     <script src="popup.js"></script>
   </body>
 </html>
