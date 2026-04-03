@@ -1,40 +1,25 @@
 // LinkedIntrovert — content script
-// Strategy: paint the whole page white, then cut out only the top nav
-// and the center "Start a post" column. No selector hunting needed.
+// Hides feed posts, sidebars, and nav noise using position-based CSS.
+// Does NOT touch the nav bar or the "Start a post" box.
 
 const CSS = `
-  /* Paint everything white */
-  body > * { opacity: 0 !important; pointer-events: none !important; }
-
-  /* Reveal the top nav bar */
-  header,
-  nav,
-  div[role="banner"] {
-    opacity: 1 !important;
-    pointer-events: all !important;
+  /* ── Hide the left sidebar (first column) ── */
+  body > div > div > div > div > div:first-child:not(main) {
+    display: none !important;
   }
 
-  /* Reveal only the center feed column (the post box lives here) */
-  main {
-    opacity: 1 !important;
-    pointer-events: all !important;
+  /* ── Hide the right sidebar (last column) ── */
+  body > div > div > div > div > div:last-child:not(main) {
+    display: none !important;
   }
 
-  /* Inside main, hide everything except the first child (the share box) */
-  main * { opacity: 0 !important; pointer-events: none !important; }
-
-  main > div,
-  main > div > div,
-  main > div > div > div,
-  main > div > div > div > div,
-  main > div > div > div > div > div:first-child,
-  main > div > div > div > div > div:first-child > div:first-child,
-  main > div > div > div > div > div:first-child > div:first-child > *,
-  main > div > div > div > div > div:first-child > div:first-child > * > *,
-  main > div > div > div > div > div:first-child > div:first-child > * > * > * {
-    opacity: 1 !important;
-    pointer-events: all !important;
+  /* ── Hide feed posts — everything after the share box ── */
+  main > div > div > div > div > *:not(:first-child) {
+    display: none !important;
   }
+
+  /* ── Hide messaging dock ── */
+  div[id^="msg"] { display: none !important; }
 `;
 
 function injectStyles() {
