@@ -1,36 +1,40 @@
 // LinkedIntrovert — content script
-// Hides everything except "Start a post" on linkedin.com/feed/
-// Uses structural HTML selectors — immune to LinkedIn's hashed class names.
+// Strategy: paint the whole page white, then cut out only the top nav
+// and the center "Start a post" column. No selector hunting needed.
 
 const CSS = `
-  /* ── Feed: hide all posts, keep only the share box ── */
-  main > div > div > div > div > div:not(:first-child) { display: none !important; }
-  main > div > div > div > div > div:first-child > div:not(:first-child) { display: none !important; }
+  /* Paint everything white */
+  body > * { opacity: 0 !important; pointer-events: none !important; }
 
-  /* ── Right sidebar: LinkedIn News, ads, widgets ── */
-  aside { display: none !important; }
+  /* Reveal the top nav bar */
+  header,
+  nav,
+  div[role="banner"] {
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
 
-  /* ── Left sidebar: profile viewers, analytics, premium, saved items ── */
-  main ~ div,
-  header ~ div > div > div:first-child { display: none !important; }
+  /* Reveal only the center feed column (the post box lives here) */
+  main {
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
 
-  /* ── Nav: hide My Network, Jobs, For Business ── */
-  nav a[href*="/mynetwork/"],
-  nav a[href*="/jobs/"],
-  nav a[href*="/learning/"] { display: none !important; }
+  /* Inside main, hide everything except the first child (the share box) */
+  main * { opacity: 0 !important; pointer-events: none !important; }
 
-  /* Hide the nav item wrappers too so no blank space left behind */
-  nav li:has(a[href*="/mynetwork/"]),
-  nav li:has(a[href*="/jobs/"]),
-  nav li:has(a[href*="/learning/"]) { display: none !important; }
-
-  /* ── Messaging dock ── */
-  div[class*="msg-overlay"],
-  div[class*="messaging-widget"],
-  .msg-overlay-list-bubble { display: none !important; }
-
-  /* ── Bottom-right messaging bubble ── */
-  div[id*="msg-overlay"] { display: none !important; }
+  main > div,
+  main > div > div,
+  main > div > div > div,
+  main > div > div > div > div,
+  main > div > div > div > div > div:first-child,
+  main > div > div > div > div > div:first-child > div:first-child,
+  main > div > div > div > div > div:first-child > div:first-child > *,
+  main > div > div > div > div > div:first-child > div:first-child > * > *,
+  main > div > div > div > div > div:first-child > div:first-child > * > * > * {
+    opacity: 1 !important;
+    pointer-events: all !important;
+  }
 `;
 
 function injectStyles() {
