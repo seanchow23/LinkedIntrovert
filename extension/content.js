@@ -1,35 +1,39 @@
 // LinkedIntrovert — content script
-// Strategy: inject a stylesheet that hides everything on linkedin.com/feed/
-// except the "Start a post" share box. No class name hunting, no DOM scraping.
-// Works regardless of LinkedIn's hashed class names or framework changes.
+// Hides everything except "Start a post" on linkedin.com/feed/
+// Uses structural HTML selectors — immune to LinkedIn's hashed class names.
 
 const CSS = `
-  /* Hide the entire right sidebar */
-  aside { display: none !important; }
-
-  /* Hide the entire left sidebar */
-  header ~ div > div > div:first-child { display: none !important; }
-
-  /* Hide everything in the main feed EXCEPT the share/post box */
+  /* ── Feed: hide all posts, keep only the share box ── */
   main > div > div > div > div > div:not(:first-child) { display: none !important; }
   main > div > div > div > div > div:first-child > div:not(:first-child) { display: none !important; }
 
-  /* Hide the nav items we don't need */
+  /* ── Right sidebar: LinkedIn News, ads, widgets ── */
+  aside { display: none !important; }
+
+  /* ── Left sidebar: profile viewers, analytics, premium, saved items ── */
+  main ~ div,
+  header ~ div > div > div:first-child { display: none !important; }
+
+  /* ── Nav: hide My Network, Jobs, For Business ── */
   nav a[href*="/mynetwork/"],
   nav a[href*="/jobs/"],
-  nav a[href*="/notifications/"],
-  nav a[href*="/messaging/"],
-  nav a[href*="/learning/"] {
-    display: none !important;
-  }
+  nav a[href*="/learning/"] { display: none !important; }
 
-  /* Hide messaging bottom dock */
+  /* Hide the nav item wrappers too so no blank space left behind */
+  nav li:has(a[href*="/mynetwork/"]),
+  nav li:has(a[href*="/jobs/"]),
+  nav li:has(a[href*="/learning/"]) { display: none !important; }
+
+  /* ── Messaging dock ── */
   div[class*="msg-overlay"],
-  div[class*="messaging"] { display: none !important; }
+  div[class*="messaging-widget"],
+  .msg-overlay-list-bubble { display: none !important; }
+
+  /* ── Bottom-right messaging bubble ── */
+  div[id*="msg-overlay"] { display: none !important; }
 `;
 
 function injectStyles() {
-  // Remove any previously injected style to avoid duplicates
   const existing = document.getElementById('linkedintrovert-styles');
   if (existing) existing.remove();
 
@@ -39,7 +43,6 @@ function injectStyles() {
   document.head.appendChild(style);
 }
 
-// Boot — respect the popup on/off toggle
 chrome.storage.sync.get({ enabled: true }, ({ enabled }) => {
   if (!enabled) return;
   injectStyles();
